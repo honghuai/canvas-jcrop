@@ -25,7 +25,7 @@ putPhoto.prototype = {
             canvas.height = image.height;
             ctx.drawImage(image, 0, 0, image.width, image.height);
             var base64 = canvas.toDataURL('image/jpeg', 0.6);//toDataURL类型及其压缩质量
-            console.log(base64);
+            //console.log(base64);
             me.insertImg(base64);//显示压缩后的图片
         };
         image.src = src;
@@ -75,7 +75,7 @@ putPhoto.prototype = {
             suffixName : suffixName,
             type : file.type
         }
-        console.log(imgPrototype);
+        //console.log(imgPrototype);
         return imgPrototype;
     },
     showJCrop:function(src,xsize,ysize){
@@ -88,7 +88,7 @@ putPhoto.prototype = {
 
         function updatePreview(c)
         {
-            console.log("  宽度="+ c.w+"高度="+ c.h+ " x轴="+ c.x +" y轴="+ c.y);
+            //console.log("  宽度="+ c.w+"高度="+ c.h+ " x轴="+ c.x +" y轴="+ c.y);
 
             /*自定义预览效果*/
             //获取Canvas对象(画布)
@@ -111,7 +111,7 @@ putPhoto.prototype = {
                 canvas.height = ysize;
                 //浏览器加载图片完毕后再绘制图片
                 img.onload = function(){
-                    console.log("  宽度="+ c.w+"高度="+ c.h+ " x轴="+ c.x +" y轴="+ c.y);
+                    //console.log("  宽度="+ c.w+"高度="+ c.h+ " x轴="+ c.x +" y轴="+ c.y);
                     //以Canvas画布上的坐标(0,0)为起始点,宽度为canvas.width,高度为canvas.height，绘制原图像中以c.x为x轴，c.y为y轴，宽度为c.w，高度为c.h的部分图像
                     ctx.drawImage(img,c.x,c.y,c.w,c.h,0,0,canvas.width,canvas.height);
                     var base64 = canvas.toDataURL('image/jpeg', 1);//toDataURL类型及其压缩质量
@@ -138,3 +138,27 @@ $("#loadPicWrap").delegate(".loadFile","change",function(e) {
 })
 /*$("#canvasLastImg").attr("src")即为裁剪后的图片base64编码，直接传到后台，完毕*/
 /*接口执行处*/
+$("#uploadRstPic").click(function() {
+    var URL = server + "/resources/xsa/documents/uploadBase64";
+    var base64files = $("#canvasLastImg").attr("src");
+    var uploadJson = {
+        description: "用户头像",
+        entityName: "USERMANAGE",
+        publishFlag: "1",
+        filenames: $("#target").attr("filenames"),
+        base64files: base64files
+    }
+    $.ajax({
+        method: "POST",
+        url: URL,
+        data: uploadJson,
+        dataType: "json"
+    }).done(function(data) {
+        console.log(data);
+        console.log(data.rows.url)
+    }).fail(function(data) {
+        alert("请求失败");
+    }).always(function() {
+    });
+
+})
