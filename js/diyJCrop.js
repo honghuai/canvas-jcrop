@@ -69,7 +69,9 @@ putPhoto.prototype = {
     },
     loadImage : function (el) {
         var me = this;
-        document.getElementById(el).onchange = function(e) {
+        //document.getElementById(el).onchange = function(e) {
+        var el = "#"+el;
+        $("body").delegate(el,"change",function(e){
             if(me.error) { return; }
             var _file = e.target.files[0];
             //加载图像文件(url路径)
@@ -92,7 +94,7 @@ putPhoto.prototype = {
             };
             // 读取文件内容
             reader.readAsDataURL(_file);
-        }
+        })
     },
     insertImg : function (src) {
         //插入图片
@@ -102,11 +104,20 @@ putPhoto.prototype = {
             targetId = "target"+new Date().getTime();//对象id
             console.log("为空或undefined判定");
         }
-        IMAGE.id = targetId;
-        IMAGE.src = src;
-        IMAGE.className = "singlePhoto";
-        IMAGE.name = "base64files";
-        document.getElementById("wrapPic").appendChild(IMAGE);
+
+        var imgPrototype = this.getImgPrototype($(".loadFile").get(0));
+        console.log(imgPrototype);
+
+        if(document.getElementById("wrapPic").innerHTML === "") {
+            IMAGE.id = targetId;
+            IMAGE.src = src;
+            IMAGE.className = "singlePhoto";
+            IMAGE.name = "base64files";
+            document.getElementById("wrapPic").appendChild(IMAGE);
+        } else {
+            document.getElementById(targetId).src = src;
+        }
+
         this.showJCrop(targetId,src);//预览id为targetId的图片尺寸
     },
     getImgPrototype : function (Target) {
@@ -127,7 +138,6 @@ putPhoto.prototype = {
             suffixName : suffixName,
             type : file.type
         }
-        console.log(imgPrototype);
         return imgPrototype;
     },
     showJCrop:function(targetId,src){
@@ -173,18 +183,3 @@ putPhoto.prototype = {
         };
     }
 }
-/*配置方法*/
-putPhoto = new putPhoto({
-    MAX_HEIGHT:400,
-    MAX_WIDTH:400,
-    el:"Target",
-    toEl:"canvasLastImg"
-});
-/*putPhoto.insertImg = function (src) {
-    console.log("重写：插入图片,根据需求，可能需要传图片的其他属性，如图片后缀，图片名字，图片格式等信息到后台，可以在此处重写插入图片方法");
-}*/
-if(document.getElementById("wrapPic").innerHTML === "") {
-    putPhoto.loadImage("loadFileId");//调用
-}
-/*$("#canvasLastImg").attr("src")即为裁剪后的图片base64编码，直接传到后台，完毕*/
-/*接口执行处*/
