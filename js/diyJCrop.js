@@ -8,7 +8,7 @@ var putPhoto = function(o) {
         MAX_WIDTH: 400,//裁剪图片的最大高度
         MAX_HEIGHT: 400,//裁剪图片的最大宽度
         xsize: 100,//预览图片的宽度
-        ysize: 110,//预览图片的高度
+        ysize: 100,//预览图片的高度
         compression: 0.7,//图片压缩比例(原图)
         partCompression: 1,//二次压缩比例（裁剪后那部分图片）
         el:"",//必须是标签id，若没指定id则系统自动设置id = target+时间戳
@@ -149,7 +149,10 @@ putPhoto.prototype = {
         $("#"+targetId).Jcrop({
             onChange: updatePreview,
             onSelect: updatePreview,
-            aspectRatio: xsize / ysize
+            aspectRatio: xsize / ysize,
+            setSelect:   [ 0, 0, xsize, ysize ]//默认选中指定区域 [x1,y1,x2,y2]
+        },function() {//回调
+            //this.setOptions({ allowSelect: true });
         });
 
         function updatePreview(c)

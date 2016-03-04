@@ -10,7 +10,7 @@ $("#showPutBox").click(function(){
     var cssPutBoxConn = '<div class="tip-uploadWrap"><div class="tip-upload">本地上传</div><input type="file" id="loadFileId" class="loadFile" accept="image/*" capture="camera"></div>'+
         '<div id="wrapPic" style="margin-top:10px;"></div>'+
         '<br/>'+
-        '<div class="preViewBox"><img src="img/defaultUser.png" alt="" id="'+preVId+'" class="tpl-img-put"><span style="line-height: 35px;display:block;">预览效果</span></div>';
+        '<div class="preViewBox"><img src="" alt="" id="'+preVId+'" class="tpl-img-put"><span style="line-height: 35px;display:block;">预览效果</span></div>';
     layer.confirm("",{
         content:cssPutBoxConn,
         btn:["确认","取消"],
@@ -52,6 +52,7 @@ $("#showPutBox").click(function(){
 function uploadRstPhoto() {
     var URL = "/resources/xsa/documents/uploadBase64";
     var base64files = $("#canvasLastImg").attr("src");
+    if(!base64files) {return;}
     var uploadJson = {
         description: "用户头像",
         entityName: "USERMANAGE",
@@ -59,23 +60,23 @@ function uploadRstPhoto() {
         filenames: $("#Target").attr("filenames"),
         base64files: base64files
     }
-    console.log(uploadJson);
-    if(base64files){
-        $.ajax({
-            method: "POST",
-            url: URL,
-            data: uploadJson,
-            dataType: "json"
-        }).done(function(data) {
-            console.log(data);
-            var imgURL = data.rows.url;
-            $(".mt-user-avatar img").attr('src',imgURL);
-            $("#photo_img").attr('src',imgURL);
-            $('#documentPath').val(imgURL);
-            layer.closeAll();
-        }).fail(function(data) {
-            layer.msg("头像上传请求失败，请重试！", {icon: 2});
-        }).always(function() {
-        });
+    if(!base64files){
+        return;
     }
+    $.ajax({
+        method: "POST",
+        url: URL,
+        data: uploadJson,
+        dataType: "json"
+    }).done(function(data) {
+        console.log(data);
+        var imgURL = data.rows.url;
+        $(".mt-user-avatar img").attr('src',imgURL);
+        $("#photo_img").attr('src',imgURL);
+        $('#documentPath').val(imgURL);
+        layer.closeAll();
+    }).fail(function(data) {
+        layer.msg("头像上传请求失败，请重试！", {icon: 2});
+    }).always(function() {
+    });
 }
