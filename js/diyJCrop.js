@@ -12,7 +12,8 @@ var putPhoto = function(o) {
         compression: 0.7,//图片压缩比例(原图)
         partCompression: 1,//二次压缩比例（裁剪后那部分图片）
         el:"",//必须是标签id，若没指定id则系统自动设置id = target+时间戳
-        toEl:""//预览图片的id
+        toEl:"",//预览图片的id
+        jcrop: false//是否保留裁剪功能
     }
     if(!o){
         var o = origin;
@@ -31,43 +32,54 @@ var putPhoto = function(o) {
 };
 
 putPhoto.prototype = {
-    toRender : function (src) {
-        //渲染图片并压缩-canvas
+    toRender : function (el,callback) {
         var MAX_HEIGHT = this.MAX_HEIGHT;
         var MAX_WIDTH = this.MAX_WIDTH;
         var image = new Image();
         var me = this;
-        image.onload = function () {
-            /*图片宽高按照一定比例变化*/
-            if (image.height > MAX_HEIGHT) {
-                image.width *= MAX_HEIGHT / image.height;
-                image.height = MAX_HEIGHT;
-                if(image.width > MAX_WIDTH) {
+        this.loadImage(el,function(src) {
+            //渲染图片并压缩-canvas
+
+            image.onload = function () {
+                /*图片宽高按照一定比例变化*/
+                if (image.height > MAX_HEIGHT) {
+                    image.width *= MAX_HEIGHT / image.height;
+                    image.height = MAX_HEIGHT;
+                    if(image.width > MAX_WIDTH) {
+                        image.height *= MAX_WIDTH/image.width;
+                        image.width = MAX_WIDTH;
+                    }
+                }
+
+                if (image.width > MAX_WIDTH) {
                     image.height *= MAX_WIDTH/image.width;
                     image.width = MAX_WIDTH;
+                    if(image.height > MAX_HEIGHT) {
+                        image.width *= MAX_HEIGHT/image.height;
+                        image.height = MAX_HEIGHT;
+                    }
                 }
-            }
+                var canvas = document.createElement("canvas");
+                var ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                var base64 = canvas.toDataURL('image/jpeg', me.compression);//toDataURL类型及其压缩质量
+                if(!callback) {
+                    me.insertImg(base64);//插入压缩后的图片
+                    return;
+                } else {
+                    callback(base64);
+                }
 
-            if (image.width > MAX_WIDTH) {
-                image.height *= MAX_WIDTH/image.width;
-                image.width = MAX_WIDTH;
-                if(image.height > MAX_HEIGHT) {
-                    image.width *= MAX_HEIGHT/image.height;
-                    image.height = MAX_HEIGHT;
-                }
-            }
-            var canvas = document.createElement("canvas");
-            var ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.width = image.width;
-            canvas.height = image.height;
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            var base64 = canvas.toDataURL('image/jpeg', me.compression);//toDataURL类型及其压缩质量
-            me.insertImg(base64);//插入压缩后的图片
-        };
-        image.src = src;
+            };
+            image.src = src;
+            //console.log(me.originBase64);
+        })
+
     },
-    loadImage : function (el) {
+    loadImage : function (el,callback) {
         var me = this;
         //document.getElementById(el).onchange = function(e) {
         var el = "#"+el;
@@ -90,7 +102,10 @@ putPhoto.prototype = {
             var reader = new FileReader();
 
             reader.onload = function (e) {
-                me.toRender(e.target.result);
+                if(callback) {
+                    callback(e.target.result);
+                }
+                //me.toRender(e.target.result);
             };
             // 读取文件内容
             reader.readAsDataURL(_file);
@@ -141,6 +156,9 @@ putPhoto.prototype = {
         return imgPrototype;
     },
     showJCrop:function(targetId,src){
+        if(!this.jcrop) {
+            return;
+        }
         var me = this;
         var xsize = this.xsize;
         var ysize = this.ysize;
@@ -149,9 +167,9 @@ putPhoto.prototype = {
         $("#"+targetId).Jcrop({
             onChange: updatePreview,
             onSelect: updatePreview,
-            aspectRatio: xsize / ysize,
-            setSelect:   [ 0, 0, xsize, ysize ]//默认选中指定区域 [x1,y1,x2,y2]
+            aspectRatio: xsize / ysize
         },function() {//回调
+            this.setSelect([ 0, 0, xsize, ysize ]);//默认选中指定区域 [x1,y1,x2,y2]
             //this.setOptions({ allowSelect: true });
         });
 

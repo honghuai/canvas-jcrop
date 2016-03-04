@@ -27,9 +27,10 @@ $("#showPutBox").click(function(){
             MAX_HEIGHT:400,
             MAX_WIDTH:400,
             el:"Target",
-            toEl: preVId
+            toEl: preVId,
+            jcrop: true
         });
-        putPhoto.insertImg = function(src) {
+        putPhoto.insertImg = function(src) {//重写插入图片方法
             $("#wrapPic").html("");
             var targetId = this.el;
             if(this.el === "" || this.el === undefined) {
@@ -46,7 +47,19 @@ $("#showPutBox").click(function(){
             this.showJCrop(targetId,src);//预览id为targetId的图片尺寸
         }
     }
-    putPhoto.loadImage("loadFileId");//调用
+    /*应用场景1：直接获取原图base64编码*/
+    /*putPhoto.loadImage("loadFileId",function(src) {
+        console.log(src);
+    });*/
+
+    /*应用场景2：压缩处理后输出图片
+     * putPhoto.toRender(ElId,callback);
+     * callback回调方法:可选，主要对处理过的src进行赋值及其他操作
+     * */
+    /*putPhoto.toRender("loadFileId",function(src) {
+        putPhoto.insertImg(src);
+    });*/
+    putPhoto.toRender("loadFileId");
 })
 /*上传接口方法*/
 function uploadRstPhoto() {
